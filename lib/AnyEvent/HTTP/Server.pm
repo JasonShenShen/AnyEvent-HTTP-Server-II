@@ -1,3 +1,4 @@
+## read io before cb
 package AnyEvent::HTTP::Server;
 
 =head1 NAME
@@ -361,6 +362,44 @@ sub incoming {
 							
 							#warn Dumper \%h;
 							$pos = pos($buf);
+							#my $lentmp =  length($buf);
+							#print "$len content-length :  $h{'content-length'},$lentmp $pos\n";
+#							if( $len = $h{'content-length'} ) {
+#							    print "content-length : $len length($buf) $pos\n";
+#								if ( length($buf) - $pos == $len ) {
+#								    $self->{'content-message'} .=  substr($buf,$pos);
+#								}
+#								elsif ( length($buf) - $pos > $len ) {
+#								    $self->{'content-message'} .=  substr($buf,$pos);
+#								}
+#							}
+							#warn "==========pos $buf $pos" if DEBUG;
+							$self->{'content-message'} = '';
+							if(defined $h{'content-length'} && $h{'content-length'} > 0){
+								my $body_len = length($buf) - $pos;
+								my $lenxx = $h{'content-length'} - $body_len;
+								if( $lenxx > 0){
+									#warn "====>need recv $lenxx";
+									my $recv_len = 0;
+									my $retry_count = 30;
+									while ($retry_count--){ 
+										$recv_len = sysread( $fh, $buf, MAX_READ_SIZE- length $buf, length $buf ) ;
+										#$recv_len = sysread( $fh, $buf, $h{'content-length'}-length $buf - $pos, length $buf ) ;
+										$body_len = length($buf) - $pos;
+										#warn "====>($retry_count)recv $recv_len/$body_len/$h{'content-length'}";
+										if( $h{'content-length'} - $body_len <= 0){
+											#print "=====>finish";
+											last;
+										}
+										if($recv_len > 0){
+											$retry_count = 30;
+										}
+										select(undef, undef, undef, 0.25);
+									}
+									#print "$buf\n";
+								}
+							}
+							$self->{'content-message'} = substr($buf,$pos);
 							
 							$self->{total_requests}++;
 							

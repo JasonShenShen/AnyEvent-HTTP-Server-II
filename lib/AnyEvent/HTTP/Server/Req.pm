@@ -1,3 +1,4 @@
+## return contentmessage
 package AnyEvent::HTTP::Server::Form;
 
 =head1 NAME
@@ -147,6 +148,15 @@ use Digest::SHA1 'sha1';
 				return $_[0][6]{$_[1]};
 			} else {
 				return keys %{ $_[0][6] };
+			}
+		}
+		
+		sub contentmessage {
+		    if ($_[0][8]) {
+				return $_[0][8]{'content-message'};
+			}
+			else{
+			    return -1;
 			}
 		}
 		
