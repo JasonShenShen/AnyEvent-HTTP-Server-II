@@ -1,3 +1,8 @@
+
+## Benchmarks
+
+2M body的报文，AB测了处理速度为Requests per second:    3471.51 [#/sec] (mean)
+
 # AnyEvent::HTTP::Server
 
 *Fast HTTP/1.1 server component for AnyEvent Framework*
